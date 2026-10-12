@@ -6,6 +6,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.bitchat.android.R
 import com.bitchat.android.wifiaware.WifiAwareController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -76,7 +77,7 @@ class HotspotViewModel(application: Application) : AndroidViewModel(application)
                             // Get connection info
                             val info = manager.getConnectionInfo()
                             if (info == null) {
-                                failWith("Failed to get hotspot connection info")
+                                failWith(context.getString(R.string.hotspot_err_conn_info))
                                 return@launch
                             }
 
@@ -98,7 +99,7 @@ class HotspotViewModel(application: Application) : AndroidViewModel(application)
                                 )
                             } catch (e: Exception) {
                                 Log.e(TAG, "Failed to start web server", e)
-                                failWith("Failed to start web server: ${e.message}")
+                                failWith(context.getString(R.string.hotspot_err_web_server, e.message ?: ""))
                             }
                         }
                     }
@@ -131,7 +132,7 @@ class HotspotViewModel(application: Application) : AndroidViewModel(application)
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting hotspot", e)
-                failWith(e.message ?: "Unknown error")
+                failWith(e.message ?: context.getString(R.string.hotspot_err_unknown))
             }
         }
     }

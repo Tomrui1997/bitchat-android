@@ -15,6 +15,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
+import androidx.annotation.StringRes
+import com.bitchat.android.R
 import java.net.NetworkInterface
 import java.security.SecureRandom
 import kotlin.random.Random
@@ -138,19 +140,19 @@ class HotspotManager(private val context: Context) {
 
         if (wifiP2pManager == null) {
             Log.e(TAG, "Wi-Fi P2P not available on this device")
-            callback.onError("Wi-Fi Direct not supported on this device")
+            callback.onError(context.getString(R.string.hotspot_p2p_not_supported))
             return
         }
 
         val missingPermissions = HotspotPermissions.missingFrom(context)
         if (missingPermissions.isNotEmpty()) {
             Log.w(TAG, "Cannot start hotspot; missing required permissions: $missingPermissions")
-            val message = if (Manifest.permission.ACCESS_LOCAL_NETWORK in missingPermissions) {
-                "Local network permission is required to share the app over the hotspot"
+            val messageRes = if (Manifest.permission.ACCESS_LOCAL_NETWORK in missingPermissions) {
+                R.string.hotspot_permission_local_network
             } else {
-                "Nearby Wi-Fi permission is required to start the hotspot"
+                R.string.hotspot_permission_nearby_wifi
             }
-            callback.onError(message)
+            callback.onError(context.getString(messageRes))
             return
         }
 
@@ -411,7 +413,7 @@ class HotspotManager(private val context: Context) {
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Wi-Fi permission was revoked while reading P2P state", e)
-            failStartup("A required Wi-Fi or local network permission was revoked. Grant it and try again.")
+            failStartup(R.string.hotspot_permission_revoked)
         }
     }
 
@@ -435,8 +437,8 @@ class HotspotManager(private val context: Context) {
 
                 when (action) {
                     is HotspotStartupPolicy.StartAction.Fail -> {
-                        Log.w(TAG, "Not attempting group creation: ${action.message}")
-                        failStartup(action.message)
+                        Log.w(TAG, "Not attempting group creation: ${action.messageRes}")
+                        failStartup(action.messageRes)
                     }
                     HotspotStartupPolicy.StartAction.ConfirmReplaceExisting -> {
                         val name = existingGroup?.networkName
@@ -459,7 +461,7 @@ class HotspotManager(private val context: Context) {
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Wi-Fi permission was revoked while reading group info", e)
-            failStartup("A required Wi-Fi or local network permission was revoked. Grant it and try again.")
+            failStartup(R.string.hotspot_permission_revoked)
         }
     }
 
@@ -480,7 +482,7 @@ class HotspotManager(private val context: Context) {
             })
         } catch (e: SecurityException) {
             Log.e(TAG, "Wi-Fi permission was revoked while removing the existing group", e)
-            failStartup("A required Wi-Fi or local network permission was revoked. Grant it and try again.")
+            failStartup(R.string.hotspot_permission_revoked)
         }
     }
 
@@ -519,7 +521,7 @@ class HotspotManager(private val context: Context) {
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Wi-Fi permission was revoked while creating the group", e)
-            failStartup("A required Wi-Fi or local network permission was revoked. Grant it and try again.")
+            failStartup(R.string.hotspot_permission_revoked)
         }
     }
 
@@ -576,7 +578,7 @@ class HotspotManager(private val context: Context) {
                     channel?.let { clearStaleGroupThenCreate(it, attempt + 1) }
                 }, decision.delayMillis)
             }
-            is HotspotStartupPolicy.Decision.Fail -> failStartup(decision.message)
+            is HotspotStartupPolicy.Decision.Fail -> failStartup(decision.messageRes)
         }
     }
 
@@ -585,10 +587,10 @@ class HotspotManager(private val context: Context) {
      * callbacks) before notifying the callback, so a failed attempt doesn't leak
      * and block subsequent attempts.
      */
-    private fun failStartup(message: String) {
+    private fun failStartup(@StringRes resId: Int) {
         val cb = callback
         stopHotspot()
-        cb?.onError(message)
+        cb?.onError(context.getString(resId))
     }
 
     /**
@@ -621,7 +623,7 @@ class HotspotManager(private val context: Context) {
                     elapsedMillis >= GROUP_FORMATION_TIMEOUT_MILLIS
                 ) {
                     Log.e(TAG, "Group never formed within ${GROUP_FORMATION_TIMEOUT_MILLIS}ms")
-                    failStartup("Hotspot failed to start. Please try again.")
+                    failStartup(R.string.hotspot_start_failed)
                     return
                 }
 
@@ -690,7 +692,7 @@ class HotspotManager(private val context: Context) {
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Wi-Fi permission was revoked while reading group info", e)
-            failStartup("A required Wi-Fi or local network permission was revoked. Grant it and try again.")
+            failStartup(R.string.hotspot_permission_revoked)
         }
     }
 

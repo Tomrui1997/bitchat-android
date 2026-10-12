@@ -1,6 +1,8 @@
 package com.bitchat.android.ui
 
+import android.content.Context
 import android.util.Log
+import com.bitchat.android.R
 import com.bitchat.android.mesh.MeshService
 import com.bitchat.android.model.BitchatFilePacket
 import com.bitchat.android.model.BitchatMessage
@@ -35,6 +37,7 @@ class MediaSendingManager(
     private val messageManager: MessageManager,
     private val channelManager: ChannelManager,
     private val scope: CoroutineScope,
+    private val context: Context,
     private val mediaWorkDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val getMeshService: () -> MeshService
 ) {
@@ -98,7 +101,7 @@ class MediaSendingManager(
         Log.e(TAG, "❌ File too large: $size bytes (max: $MAX_FILE_SIZE)")
         val sizeMb = size / (1024 * 1024)
         val maxMb = MAX_FILE_SIZE / (1024 * 1024)
-        val text = "cannot send ${file.name}: file is too large (${sizeMb} MB, max $maxMb MB)"
+        val text = context.getString(R.string.media_file_too_large, file.name, sizeMb, maxMb)
         when {
             toPeerIDOrNull != null -> {
                 val sys = BitchatMessage(
@@ -305,7 +308,7 @@ class MediaSendingManager(
             ?: run {
                 addPrivateMediaSystemMessage(
                     toPeerID,
-                    "Private media was not sent because this conversation has no active mesh route."
+                    context.getString(R.string.media_no_route)
                 )
                 return
             }
@@ -323,7 +326,7 @@ class MediaSendingManager(
         if (!reserveAutomaticPending(pending)) {
             addPrivateMediaSystemMessage(
                 recipient.conversationID,
-                "Private media was not sent because another secure media send is still pending."
+                context.getString(R.string.media_pending_send)
             )
             return
         }
@@ -356,7 +359,7 @@ class MediaSendingManager(
         if (!reserveAutomaticPending(automatic)) {
             addPrivateMediaSystemMessage(
                 pending.conversationID,
-                "Private media was not sent because another secure media send is still pending."
+                context.getString(R.string.media_pending_send)
             )
             return
         }
@@ -417,7 +420,7 @@ class MediaSendingManager(
                 }
             } catch (error: Exception) {
                 PrivateMediaPreparation.Rejected(
-                    error.message ?: "Secure private-media preparation failed"
+                    error.message ?: context.getString(R.string.media_prep_failed)
                 )
             }
             val stillCurrent = synchronized(pendingConsentLock) {
@@ -464,7 +467,7 @@ class MediaSendingManager(
                     Log.w(TAG, "Legacy consent was consumed but policy still requested consent; send aborted")
                     addPrivateMediaSystemMessage(
                         pending.conversationID,
-                        "Private media was not sent because its security policy changed."
+                        context.getString(R.string.media_policy_changed)
                     )
                     return
                 }
@@ -477,7 +480,7 @@ class MediaSendingManager(
                     requestId = UUID.randomUUID().toString(),
                     recipientNickname = nickname,
                     fileName = pending.filePacket.fileName,
-                    warning = preparation.warning
+                    warning = context.getString(preparation.warningRes)
                 )
                 synchronized(pendingConsentLock) {
                     if (pendingPrivateMedia != null) {
@@ -514,10 +517,16 @@ class MediaSendingManager(
 
             is PrivateMediaPreparation.Rejected -> {
                 clearAutomaticPending(pending.requestId)
-                Log.w(TAG, "Private media not sent: ${preparation.reason}")
+                // reasonRes 有值时为已本地化的失败原因；否则回退到原始 reason（动态错误消息）
+                val reasonText = if (preparation.reasonRes != 0) {
+                    context.getString(preparation.reasonRes)
+                } else {
+                    preparation.reason
+                }
+                Log.w(TAG, "Private media not sent: $reasonText")
                 addPrivateMediaSystemMessage(
                     pending.conversationID,
-                    "Private media was not sent: ${preparation.reason}"
+                    context.getString(R.string.media_not_sent, reasonText)
                 )
             }
         }
@@ -557,7 +566,7 @@ class MediaSendingManager(
             if (expired) {
                 addPrivateMediaSystemMessage(
                     pending.conversationID,
-                    "Private media was not sent because secure session setup timed out."
+                    context.getString(R.string.media_session_timeout)
                 )
             }
         }
@@ -634,7 +643,7 @@ class MediaSendingManager(
             Log.e(TAG, "Prepared private-media message could not be persisted; send aborted")
             addPrivateMediaSystemMessage(
                 conversationID,
-                "Private media was not sent because the conversation could not be saved."
+                context.getString(R.string.media_not_saved)
             )
             return
         }
@@ -655,13 +664,13 @@ class MediaSendingManager(
             messageManager.updateMessageDeliveryStatus(
                 msg.id,
                 com.bitchat.android.model.DeliveryStatus.Failed(
-                    "Prepared transfer could not be committed"
+                    context.getString(R.string.media_commit_reason)
                 )
             )
             Log.w(TAG, "Prepared private-media commit failed; local echo marked failed")
             addPrivateMediaSystemMessage(
                 conversationID,
-                "Private media was not sent because the prepared transfer could not be committed."
+                context.getString(R.string.media_commit_failed)
             )
             return
         }
@@ -773,7 +782,9 @@ class MediaSendingManager(
             if (evt.failed) {
                 messageManager.updateMessageDeliveryStatus(
                     msgId,
-                    com.bitchat.android.model.DeliveryStatus.Failed("transfer could not be sent")
+                    com.bitchat.android.model.DeliveryStatus.Failed(
+                        context.getString(R.string.media_transfer_failed)
+                    )
                 )
                 synchronized(transferMessageMap) {
                     val msgIdRemoved = transferMessageMap.remove(evt.transferId)

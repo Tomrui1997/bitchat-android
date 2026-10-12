@@ -1009,13 +1009,13 @@ class BluetoothMeshService(private val context: Context) : TransportBridgeServic
             allowLegacyFallback = allowLegacyFallback
         )) {
             is PrivateMediaBuildOutcome.RequiresLegacyConsent ->
-                PrivateMediaPreparation.RequiresLegacyConsent(outcome.warning)
+                PrivateMediaPreparation.RequiresLegacyConsent(outcome.warningRes)
             PrivateMediaBuildOutcome.NeedsHandshake ->
                 PrivateMediaPreparation.NeedsHandshake
             PrivateMediaBuildOutcome.AwaitingPeerState ->
                 PrivateMediaPreparation.AwaitingPeerState
             is PrivateMediaBuildOutcome.Rejected ->
-                PrivateMediaPreparation.Rejected(outcome.reason)
+                PrivateMediaPreparation.Rejected(outcome.reason, outcome.reasonRes)
             is PrivateMediaBuildOutcome.Ready -> {
                 val built = outcome.built
                 val routed = RoutedPacket(

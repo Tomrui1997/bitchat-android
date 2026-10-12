@@ -1,11 +1,14 @@
 package com.bitchat.android.hotspot
 
 import android.net.wifi.p2p.WifiP2pManager
+import androidx.annotation.StringRes
+import com.bitchat.android.R
 
 /**
  * Decides how to react to a Wi-Fi P2P group-creation failure.
  *
- * Kept free of Android dependencies so the retry strategy is unit testable.
+ * Kept free of Android runtime dependencies (string resource ids only) so the
+ * retry strategy stays unit testable.
  */
 internal object HotspotStartupPolicy {
 
@@ -13,28 +16,33 @@ internal object HotspotStartupPolicy {
     const val INITIAL_RETRY_DELAY_MILLIS = 1_000L
     const val MAX_RETRY_DELAY_MILLIS = 8_000L
 
-    const val P2P_DISABLED_MESSAGE =
-        "Wi-Fi Direct is unavailable. Turn Wi-Fi off and back on, then try again."
+    @StringRes
+    val P2P_DISABLED_MESSAGE = R.string.hotspot_p2p_disabled
     /** Marks groups this app creates. Shared with [HotspotManager] so the two cannot drift. */
     const val SSID_PREFIX = "DIRECT-BC-" // BC for BitChat
 
-    const val P2P_UNSUPPORTED_MESSAGE = "Wi-Fi Direct is not supported on this device."
-    const val P2P_BUSY_MESSAGE = "Wi-Fi Direct is busy. Please try again in a moment."
-    const val GENERIC_FAILURE_MESSAGE = "Failed to start the hotspot. Please try again."
+    @StringRes
+    val P2P_UNSUPPORTED_MESSAGE = R.string.hotspot_p2p_unsupported
+
+    @StringRes
+    val P2P_BUSY_MESSAGE = R.string.hotspot_p2p_busy
+
+    @StringRes
+    val GENERIC_FAILURE_MESSAGE = R.string.hotspot_generic_failure
 
     sealed interface Decision {
         data class Retry(val delayMillis: Long) : Decision
-        data class Fail(val message: String) : Decision
+        data class Fail(@StringRes val messageRes: Int) : Decision
     }
 
     sealed interface StartAction {
         data object Create : StartAction
         data object RemoveStaleGroupThenCreate : StartAction
 
-        /** A group we cannot show is ours is up; ask the user before disturbing it. */
+        /** A group we cannot show is ours; ask the user before disturbing it. */
         data object ConfirmReplaceExisting : StartAction
 
-        data class Fail(val message: String) : StartAction
+        data class Fail(@StringRes val messageRes: Int) : StartAction
     }
 
     /**

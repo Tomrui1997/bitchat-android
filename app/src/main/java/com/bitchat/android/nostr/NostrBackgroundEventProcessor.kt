@@ -38,6 +38,7 @@ internal class NostrBackgroundEventProcessor(
         state = state,
         messageManager = messageManager,
         dataManager = dataManager,
+        context = application.applicationContext,
         noiseSessionDelegate = object : NoiseSessionDelegate {
             override fun hasEstablishedSession(peerID: String): Boolean = false
             override fun initiateHandshake(peerID: String) = Unit

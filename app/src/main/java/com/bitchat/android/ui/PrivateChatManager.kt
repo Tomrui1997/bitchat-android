@@ -3,12 +3,14 @@ package com.bitchat.android.ui
 import com.bitchat.android.favorites.FavoritesPersistenceService
 import com.bitchat.android.model.BitchatMessage
 import com.bitchat.android.model.DeliveryStatus
+import com.bitchat.android.R
 import com.bitchat.android.mesh.PeerFingerprintManager
 import com.bitchat.android.mesh.MeshService
 import com.bitchat.android.services.ContactDirectory
 import com.bitchat.android.services.ContactIdentityResolver
 
 import java.util.*
+import android.content.Context
 import android.util.Log
 
 /**
@@ -34,6 +36,7 @@ class PrivateChatManager(
     private val messageManager: MessageManager,
     private val dataManager: DataManager,
     private val noiseSessionDelegate: NoiseSessionDelegate,
+    private val context: Context,
     private val trackUnreadMessages: Boolean = true,
     private val hasReadReceiptBeenSent: (messageID: String) -> Boolean = { false },
     private val markMessageReadLocally: (messageID: String) -> Unit = {}
@@ -63,7 +66,7 @@ class PrivateChatManager(
             val peerNickname = route.displayName ?: getPeerNickname(peerID, meshService)
             val systemMessage = BitchatMessage(
                 sender = "system",
-                content = "cannot start chat with $peerNickname: user is blocked.",
+                content = context.getString(R.string.pc_start_blocked, peerNickname),
                 timestamp = Date(),
                 isRelay = false
             )
@@ -109,7 +112,7 @@ class PrivateChatManager(
         if (isPeerBlocked(peerID)) {
             val systemMessage = BitchatMessage(
                 sender = "system",
-                content = "cannot send message to $recipientNickname: user is blocked.",
+                content = context.getString(R.string.pc_send_blocked, recipientNickname ?: ""),
                 timestamp = Date(),
                 isRelay = false
             )
@@ -152,7 +155,7 @@ class PrivateChatManager(
         if (isPeerBlocked(peerID)) {
             val systemMessage = BitchatMessage(
                 sender = "system",
-                content = "cannot send message to $recipientNickname: user is blocked.",
+                content = context.getString(R.string.pc_send_blocked, recipientNickname ?: ""),
                 timestamp = Date(),
                 isRelay = false
             )
@@ -272,7 +275,7 @@ class PrivateChatManager(
             val peerNickname = getPeerNickname(peerID, meshService)
             val systemMessage = BitchatMessage(
                 sender = "system",
-                content = "blocked user $peerNickname",
+                content = context.getString(R.string.pc_blocked_user, peerNickname),
                 timestamp = Date(),
                 isRelay = false
             )
@@ -296,7 +299,7 @@ class PrivateChatManager(
             val peerNickname = getPeerNickname(peerID, meshService)
             val systemMessage = BitchatMessage(
                 sender = "system",
-                content = "unblocked user $peerNickname",
+                content = context.getString(R.string.pc_unblocked_user, peerNickname),
                 timestamp = Date(),
                 isRelay = false
             )
@@ -314,7 +317,7 @@ class PrivateChatManager(
         } else {
             val systemMessage = BitchatMessage(
                 sender = "system",
-                content = "user '$targetName' not found",
+                content = context.getString(R.string.pc_user_not_found, targetName),
                 timestamp = Date(),
                 isRelay = false
             )
@@ -333,7 +336,7 @@ class PrivateChatManager(
             } else {
                 val systemMessage = BitchatMessage(
                     sender = "system",
-                    content = "user '$targetName' is not blocked",
+                    content = context.getString(R.string.pc_user_not_blocked, targetName),
                     timestamp = Date(),
                     isRelay = false
                 )
@@ -343,7 +346,7 @@ class PrivateChatManager(
         } else {
             val systemMessage = BitchatMessage(
                 sender = "system",
-                content = "user '$targetName' not found",
+                content = context.getString(R.string.pc_user_not_found, targetName),
                 timestamp = Date(),
                 isRelay = false
             )
@@ -355,9 +358,9 @@ class PrivateChatManager(
     fun listBlockedUsers(): String {
         val blockedCount = dataManager.blockedUsers.size
         return if (blockedCount == 0) {
-            "no blocked users"
+            context.getString(R.string.pc_no_blocked_users)
         } else {
-            "blocked users: $blockedCount fingerprints"
+            context.getString(R.string.pc_blocked_users_fmt, blockedCount)
         }
     }
 

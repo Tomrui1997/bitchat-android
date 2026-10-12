@@ -54,7 +54,7 @@ fun LinkPreviewPill(
         null
     }
     
-    val displayTitle = title ?: parsedUrl?.host ?: "Link"
+    val displayTitle = title ?: parsedUrl?.host ?: stringResource(com.bitchat.android.R.string.link_preview_fallback)
     val displayHost = parsedUrl?.host ?: url
     
     Surface(

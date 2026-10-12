@@ -746,6 +746,10 @@ fun PeopleSection(
 
         Log.d("SidebarComponents", "Recomposing with ${favoritePeers.size} favorites, peer states: $peerFavoriteStates")
 
+        // Localized "You" label; display and identity checks share this value so they
+        // cannot drift apart in a non-English locale.
+        val youLabel = stringResource(R.string.you)
+
         // Smart sorting: unread DMs first, then by most recent DM, then favorites, then alphabetical
         val sortedPeers = connectedPeers.sortedWith(
             compareBy<String> { !hasUnreadPrivateMessages.contains(it) } // Unread DM senders first
@@ -757,7 +761,7 @@ fun PeopleSection(
         // Build a map of base name counts across all people shown in the list (connected + offline + nostr)
         // Helper to compute display name used for a given key
         fun computeDisplayNameForPeerId(key: String): String {
-            return if (key == nickname) "You" else (peerNicknames[key] ?: (privateChats[key]?.lastOrNull()?.sender ?: key.take(12)))
+            return if (key == nickname) youLabel else (peerNicknames[key] ?: (privateChats[key]?.lastOrNull()?.sender ?: key.take(12)))
         }
 
         val baseNameCounts = mutableMapOf<String, Int>()
@@ -766,7 +770,7 @@ fun PeopleSection(
         sortedPeers.forEach { pid ->
             val dn = computeDisplayNameForPeerId(pid)
             val (b, _) = splitSuffix(dn)
-            if (b != "You") baseNameCounts[b] = (baseNameCounts[b] ?: 0) + 1
+            if (b != youLabel) baseNameCounts[b] = (baseNameCounts[b] ?: 0) + 1
         }
 
         // Offline favorites (exclude ones mapped to connected)
@@ -779,7 +783,7 @@ fun PeopleSection(
             ) {
                 val dn = peerNicknames[favPeerID] ?: fav.peerNickname
                 val (b, _) = splitSuffix(dn)
-                if (b != "You") baseNameCounts[b] = (baseNameCounts[b] ?: 0) + 1
+                if (b != youLabel) baseNameCounts[b] = (baseNameCounts[b] ?: 0) + 1
             }
         }
 
@@ -820,7 +824,7 @@ fun PeopleSection(
                 if (noiseHex != null) privateChats[noiseHex]?.count { msg -> msg.sender != nickname && nostrUnread } ?: 0 else 0
             )
 
-            val displayName = if (peerID == nickname) "You" else (peerNicknames[peerID] ?: (privateChats[peerID]?.lastOrNull()?.sender ?: peerID.take(12)))
+            val displayName = if (peerID == nickname) youLabel else (peerNicknames[peerID] ?: (privateChats[peerID]?.lastOrNull()?.sender ?: peerID.take(12)))
             val (bName, _) = splitSuffix(displayName)
             val showHash = (baseNameCounts[bName] ?: 0) > 1
 
@@ -1483,7 +1487,7 @@ private fun PeerItem(
     val (baseNameRaw, suffixRaw) = splitSuffix(displayName)
     val baseName = truncateNickname(baseNameRaw)
     val suffix = if (showHashSuffix) suffixRaw else ""
-    val isMe = displayName == "You" || peerID == currentNickname
+    val isMe = peerID == currentNickname || displayName == stringResource(R.string.you)
 
     // Get consistent peer color (iOS-compatible)
     val palette = LocalBitchatPalette.current

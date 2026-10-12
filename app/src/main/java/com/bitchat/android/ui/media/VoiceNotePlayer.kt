@@ -96,7 +96,11 @@ fun VoiceNotePlayer(
         FilledTonalIconButton(onClick = { if (controlsEnabled) isPlaying = !isPlaying }, enabled = controlsEnabled, modifier = Modifier.size(28.dp)) {
             Icon(
                 imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                contentDescription = if (isPlaying) "Pause" else "Play"
+                contentDescription = if (isPlaying) {
+                    androidx.compose.ui.res.stringResource(com.bitchat.android.R.string.voice_pause_cd)
+                } else {
+                    androidx.compose.ui.res.stringResource(com.bitchat.android.R.string.voice_play_cd)
+                }
             )
         }
         val progressBarColor = progressColor ?: MaterialTheme.colorScheme.primary

@@ -2,6 +2,7 @@ package com.bitchat.android.hotspot
 
 import android.content.Context
 import android.util.Log
+import com.bitchat.android.R
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
 import java.io.FileInputStream
@@ -116,7 +117,7 @@ class ApkWebServer(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Download BitChat</title>
+    <title>${context.getString(R.string.apk_web_title)}</title>
     <style>
         * {
             margin: 0;
@@ -258,37 +259,37 @@ class ApkWebServer(
     <div class="container">
         <div class="logo">🔒</div>
         <h1>BitChat</h1>
-        <p class="subtitle">Secure Mesh Messaging</p>
+        <p class="subtitle">${context.getString(R.string.apk_web_subtitle)}</p>
 
         <div class="info-grid">
             <div class="info-box">
-                <div class="info-label">Version</div>
+                <div class="info-label">${context.getString(R.string.debug_dist_version)}</div>
                 <div class="info-value">$appVersion</div>
             </div>
             <div class="info-box">
-                <div class="info-label">Size</div>
+                <div class="info-label">${context.getString(R.string.apk_web_label_size)}</div>
                 <div class="info-value">${apkSizeMb} MB</div>
             </div>
         </div>
 
         <a href="/bitchat.apk" class="download-button">
-            📥 Download BitChat
+            ${context.getString(R.string.apk_web_download)}
         </a>
 
         <div class="instructions">
-            <h3>📱 Installation Instructions</h3>
+            <h3>${context.getString(R.string.apk_web_install_title)}</h3>
             <ol>
-                <li>Tap the download button above</li>
-                <li>Wait for the download to complete</li>
-                <li>Open the downloaded APK file</li>
-                <li>If prompted, enable "Install from unknown sources" for your browser</li>
-                <li>Follow the installation prompts</li>
+                <li>${context.getString(R.string.apk_web_step1)}</li>
+                <li>${context.getString(R.string.apk_web_step2)}</li>
+                <li>${context.getString(R.string.apk_web_step3)}</li>
+                <li>${context.getString(R.string.apk_web_step4)}</li>
+                <li>${context.getString(R.string.apk_web_step5)}</li>
             </ol>
         </div>
 
         <div class="warning">
-            <strong>⚠️ Note:</strong>
-            If you already have BitChat installed, you may need to uninstall it first before installing this version. Make sure to backup your data if needed.
+            <strong>${context.getString(R.string.apk_web_note_title)}</strong>
+            ${context.getString(R.string.apk_web_note_text)}
         </div>
     </div>
 </body>

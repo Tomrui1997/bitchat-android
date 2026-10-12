@@ -1165,7 +1165,7 @@ internal fun CashuPaymentChip(
                 text = { Text(stringResource(R.string.cashu_copy_token)) },
                 onClick = {
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Cashu token", token))
+                    clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.cmd_cashu_token), token))
                     showMenu = false
                 }
             )

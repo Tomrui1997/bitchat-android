@@ -164,6 +164,7 @@ class ChatViewModel(
         messageManager,
         dataManager,
         noiseSessionDelegate,
+        application.applicationContext,
         hasReadReceiptBeenSent = { messageID ->
             seenMessageStore.hasReadReceiptBeenSent(messageID)
         },
@@ -176,6 +177,7 @@ class ChatViewModel(
         messageManager,
         channelManager,
         privateChatManager,
+        application.applicationContext,
         viewModelScope
     )
     private val notificationManager = NotificationManager(
@@ -199,7 +201,8 @@ class ChatViewModel(
         state,
         messageManager,
         channelManager,
-        viewModelScope
+        viewModelScope,
+        application.applicationContext
     ) { mesh }
     
     // Delegate handler for mesh callbacks
@@ -441,7 +444,11 @@ class ChatViewModel(
             com.bitchat.android.services.MessageRouter.getInstance(getApplication(), mesh).onMessageExpired = { messageID ->
                 messageManager.updateMessageDeliveryStatus(
                     messageID,
-                    com.bitchat.android.model.DeliveryStatus.Failed("Message expired before delivery")
+                    com.bitchat.android.model.DeliveryStatus.Failed(
+                        getApplication<android.app.Application>().getString(
+                            com.bitchat.android.R.string.message_expired
+                        )
+                    )
                 )
             }
         } catch (_: Exception) { }

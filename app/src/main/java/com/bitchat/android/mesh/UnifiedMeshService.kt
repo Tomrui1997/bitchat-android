@@ -2,6 +2,7 @@ package com.bitchat.android.mesh
 
 import android.content.Context
 import android.util.Log
+import com.bitchat.android.R
 import com.bitchat.android.favorites.FavoriteControlMessage
 import com.bitchat.android.model.BitchatFilePacket
 import com.bitchat.android.model.BitchatMessage
@@ -202,7 +203,10 @@ class UnifiedMeshService(
                 file,
                 transferId,
                 allowLegacyFallback
-            ) ?: PrivateMediaPreparation.Rejected("Wi-Fi Aware transport is unavailable")
+            ) ?: PrivateMediaPreparation.Rejected(
+                "Wi-Fi Aware transport is unavailable",
+                R.string.pmt_wifi_unavailable
+            )
             isBleConnected(recipientPeerID) || (isBleEnabled() && !isWifiConnected(recipientPeerID)) ->
                 bluetooth.prepareFilePrivate(
                     recipientPeerID,
@@ -215,7 +219,10 @@ class UnifiedMeshService(
                 file,
                 transferId,
                 allowLegacyFallback
-            ) ?: PrivateMediaPreparation.Rejected("No local transport is available for this peer")
+            ) ?: PrivateMediaPreparation.Rejected(
+                "No local transport is available for this peer",
+                R.string.pmt_no_transport
+            )
         }
     }
 
